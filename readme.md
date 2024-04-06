@@ -13,7 +13,7 @@ online dictionary [takoboto](https://apps.takoboto.jp/). The GUI is written usin
 # Acknowledgment
 This tool uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic Dictionary Research and Development Group, and are used in conformance with the Group's licence. See also [JMDICT](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project )
 
-# Beware:
+# Beware
 This program modifies your Anki data. No responsibility is given for potential damages and problems due to software bugs etc. See also license.
 
 # Installation 
@@ -60,8 +60,6 @@ Here is how to add cards after starting the program:
 <img src="images/readme2.png" width="500">
 
 - Enter the word in he entry lookup field, hopefully the word is found (use base forms for verbs and adjectives)
-
-<img src="images/readme3.png" width="500">
 
 - If required change translation, expression and reading fields
 
