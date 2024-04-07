@@ -1,0 +1,9 @@
+
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/MangAnki.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+*.pyc
+screenshot.png
+screenshot_scale.png

@@ -107,7 +107,7 @@ class AnkiInterface:
             print("Exception in AnkiInterface: %s" % e)
             raise e
 
-    def add_card(self, expression, reading, translation, dict_id, image: Image):
+    def add_card(self, expression, reading, translation, dict_id, image: Image, tag: str):
         import os, uuid
 
         note = anki.notes.Note(model=self._model, col=self._collection)
@@ -121,6 +121,8 @@ class AnkiInterface:
             "intent:#Intent;package=jp.takoboto;action=jp.takoboto.WORD;i.word=%s;S.browser_fallback_url=http%%3A%%2F%%2Ftakoboto.jp%%2F%%3Fw%%3D%s;end"
             % (dict_id, dict_id)
         )
+        if tag:
+            note.add_tag(tag)
         deck_id = self._collection.decks.id(self._deck_name)
         note.model()['did'] = deck_id
         self._collection.add_note(note, self._collection.decks.id(self._deck_name, True))

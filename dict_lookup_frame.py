@@ -75,6 +75,7 @@ class DictLookupFrame(tk.Frame):
             self._translation.get("1.0", tk.END),
             self._delegate.get_current_translation_entry().unique_id,
             self._delegate.get_image_with_marking(),
+            self._tag_text.get()
         )
 
     def update_controls(self):
@@ -101,6 +102,7 @@ class DictLookupFrame(tk.Frame):
             self, textvariable=self._expression_text, font=self._font
         )
         self._expression.grid(row=2, column=1, padx=0, pady=0)
+
         self._reading_label = tk.Label(
             self, text="Reading", anchor="e", justify=tk.LEFT
         )
@@ -109,20 +111,29 @@ class DictLookupFrame(tk.Frame):
         self._reading = tk.Entry(self, textvariable=self._reading_text, font=self._font)
         self._reading.grid(row=3, column=1, padx=5, pady=5)
 
+        self._tag_label = tk.Label(
+            self, text="Tag:", anchor="e", justify=tk.LEFT
+        )
+        self._tag_label.grid(row=4, column=0, padx=5, pady=5, sticky="w")
+        self._tag_text = tk.StringVar()
+        self._tag = tk.Entry(self, textvariable=self._tag_text, font=self._font)
+        self._tag.grid(row=4, column=1, padx=5, pady=5)
+
         self._translation_label = tk.Label(
             self, text="Translation", anchor="e", justify=tk.LEFT
         )
-        self._translation_label.grid(row=4, column=0, padx=5, pady=5, sticky="w")
+        self._translation_label.grid(row=5, column=0, padx=5, pady=5, sticky="w")
         self._translation = tk.Text(self, width=22, height=4, font=self._small_font)
-        self._translation.grid(row=4, column=1, padx=5, pady=5)
+        self._translation.grid(row=5, column=1, padx=5, pady=5)
         self._link_button = tk.Button(
             self, text="Takoboto link", command=self.on_link_click
         )
-        self._link_button.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
+
+        self._link_button.grid(row=6, column=0, columnspan=2, padx=5, pady=5)
         self._add_card_button = tk.Button(
             self, text="Add card", command=self.on_add_card
         )
-        self._add_card_button.grid(row=6, column=0, columnspan=2, padx=5, pady=5)
+        self._add_card_button.grid(row=7, column=0, columnspan=2, padx=5, pady=5)
         self._add_card_button.config(state="disabled")
         jdict_ack = """
 Acknowledgment: This tool uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic Dictionary Research and Development Group, and are used in conformance with the Group's licence. See also https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project.
@@ -135,4 +146,4 @@ Acknowledgment: This tool uses the JMdict/EDICT and KANJIDIC dictionary files. T
             justify="left",
             wraplength=330,
         )
-        self._ack_jdict_label.grid(row=7, column=0, columnspan=2, padx=5, pady=5)
+        self._ack_jdict_label.grid(row=8, column=0, columnspan=2, padx=5, pady=5)

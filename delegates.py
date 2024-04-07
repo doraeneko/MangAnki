@@ -127,5 +127,5 @@ class Delegate:
         else:
             return ""
 
-    def add_anki_card(self, expression, reading, translation, dict_id, image):
-        self._anki_connection.add_card(expression, reading, translation, dict_id, image)
+    def add_anki_card(self, expression, reading, translation, dict_id, image, tag):
+        self._anki_connection.add_card(expression, reading, translation, dict_id, image, tag)
