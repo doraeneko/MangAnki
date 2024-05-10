@@ -4,7 +4,7 @@ MangAnki is a simple add-on for  [Anki](https://apps.ankiweb.net/), a popular SR
 to create flash cards for Japanese words and sentences from online media. 
 It has been written for making vocabulary mining easier when reading mangas online. 
 It allows to process screenshots of manga excerpts and includes a dictionary lookup. It creates cards
-from screenshot excerpts and dictionary entries; the cards contain a link to the word entry in Takoboto,
+from screenshot excerpts and dictionary entries; the cards contain a link to the word entry in [takoboto](https://apps.takoboto.jp/),
 a popular Japanese dictionary, providing more information and phrases.
 
 <img src="images/screenshot_main.png" width="50%" />
@@ -14,8 +14,7 @@ The generated cards have an image containing a Japanese sentence on the front pa
 and the meaning of one of the words in the sentence on the back side.
 Images copied into the system clipboard (e.g. using the Windows Snipping tool) are automatically
 imported into the tool, an unknown word in the image can be marked, and a dictionary 
-lookup can be performed to obtain meaning and writing, and also a link to the popular 
-online dictionary [takoboto](https://apps.takoboto.jp/). 
+lookup can be performed to obtain meaning and writing.
 
 # Acknowledgments
 - MangAnki uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic Dictionary Research and Development Group, and are used in conformance with the Group's licence. See also [JMDICT](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project )
