@@ -13,12 +13,12 @@ from PyQt6.QtWidgets import QApplication
 
 try:
     from .resources import Resources
-    from .manganki_window import MangankiWindow
+    from .manganki_window import MangAnkiWindow
     from .app_logic import AppLogic
     from .dict_lookup import DictionaryLookup, DictionaryEntry
 except:
     from resources import Resources
-    from manganki_window import MangankiWindow
+    from manganki_window import MangAnkiWindow
     from app_logic import AppLogic
     from dict_lookup import DictionaryLookup, DictionaryEntry
 
@@ -28,17 +28,16 @@ from aqt.qt import *
 
 def main():
     app = QApplication(sys.argv)
-    window = MangankiWindow()
-    window.show()
+    window = MangAnkiWindow()
     sys.exit(app.exec())
 
 
 def start_plugin():
     if not hasattr(mw, "manganki_window"):
         app_state = AppLogic()
-        mw.change_expression_window = MangankiWindow()
+        mw.change_expression_window = MangAnkiWindow()
     dialogs.open("AddCards", mw)
-    mw.change_expression_window.show()
+    # mw.change_expression_window.show()
 
     # app = QApplication(sys.argv)
     # window = MangankiWindow(models.Model())

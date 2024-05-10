@@ -1,5 +1,5 @@
 ######################################################################
-# Manganki
+# MangAnki
 # Anki plugin to help with vocab mining of online mangas
 # Copyright 2024, Andreas Gaiser
 ######################################################################
@@ -13,8 +13,10 @@ from PyQt6.QtCore import Qt, QPoint
 
 try:
     from .resources import Resources
+    from .app_logic import AppState
 except:
     from resources import Resources
+    from app_logic import AppState
 
 
 class ClipboardImageWidget(QWidget):
@@ -44,6 +46,8 @@ class ClipboardImageWidget(QWidget):
         return start_x, start_y, width, height
 
     def on_clipboard_changed(self):
+        if self._r.AppState == AppState.LOADING_AND_PREPARING:
+            return
         mime_data = self.clipboard.mimeData()
         if mime_data.hasImage():
             # Retrieve image data

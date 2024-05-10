@@ -1,11 +1,12 @@
 ######################################################################
-# Manganki
+# MangAnki
 # Anki plugin to help with vocab mining of online mangas
 # Copyright 2024, Andreas Gaiser
 ######################################################################
 # Main window containing all controls.
 ######################################################################
 
+import webbrowser
 from aqt.qt import *
 from PyQt6.QtWidgets import QMainWindow, QWidget, QSizePolicy
 from PyQt6.QtCore import Qt
@@ -17,6 +18,7 @@ try:
     from .anki_transfer import add_reviewer_card
     from .app_logic import AppState, AppLogic
     from .info_window import InfoWindow
+    from .splash_screen import SplashScreen
 except:
     from clipboard_image_widget import ClipboardImageWidget
     from app_logic import AppState, AppLogic
@@ -24,22 +26,36 @@ except:
     from anki_transfer import add_reviewer_card
     from app_logic import AppState, AppLogic
     from info_window import InfoWindow
-import webbrowser
+    from splash_screen import SplashScreen
 
 
-class MangankiWindow(QMainWindow):
+class PreparationWorker(QThread):
+    """Load dictionary asynchronously"""
+
+    finished = pyqtSignal()
+
+    def __init__(self, app_logic: AppLogic):
+        super().__init__()
+        self._app_logic = app_logic
+
+    def run(self):
+        self._app_logic.do_initial_loading_tasks()
+        self._app_logic.read_stored_program_state()
+        self.finished.emit()
+
+
+class MangAnkiWindow(QMainWindow):
     """Main window of the plugin."""
 
     def __init__(self):
         super().__init__()
-        self._appstate = AppLogic()
-        self._appstate.read_stored_program_state()
+        self._app_logic = AppLogic()
         self.closeEvent = self.on_close
-        self._r = self._appstate.get_resources()
+        self._r = self._app_logic.get_resources()
         self._status_label = None
         self._web_lookup_button = None
         self._transfer_button = None
-        self._list_box = None
+        self._translations_listbox = None
         self._list_box_label = None
         self._entry_edit = None
         self._entry_label = None
@@ -57,10 +73,21 @@ class MangankiWindow(QMainWindow):
         self._tag_edit = None
         self.build_gui()
         self.add_listeners()
+        self._splash_screen = SplashScreen()
+        self._prep_worker = PreparationWorker(self._app_logic)
+        self._prep_worker.finished.connect(self.on_preparation_done)
+        self._splash_screen.show()
+        self.hide()
+        self._prep_worker.start()
+
+    def on_preparation_done(self):
+        self._splash_screen.close()
+        self._language_combo_box.clear()
+        self.show()
+        self._r["AppState"] = AppState.INITIAL
 
     def build_gui(self):
-        self.setWindowTitle("Manganki")
-        # Create a menu bar
+        self.setWindowTitle("MangAnki")
         menubar = self.menuBar()
         self._info_menu = menubar.addMenu("Info")
         self._info_menu.aboutToShow.connect(self.open_info_window)
@@ -75,14 +102,10 @@ class MangankiWindow(QMainWindow):
         self._layout.addWidget(preferred_language_label)
         self._language_combo_box = QComboBox()
         self._language_combo_box.clear()
-        for language in sorted(self._r["TranslationLanguages"]):
-            self._language_combo_box.addItem(language)
-
         self._language_combo_box.currentIndexChanged.connect(
-            self.preferred_language_changed
+            self.on_preferred_language_changed
         )
         self._layout.addWidget(self._language_combo_box)
-
         canvas_layout = QGridLayout()
         canvas_box = QGroupBox("Screenshot and marking:")
         canvas_size = 300
@@ -109,9 +132,9 @@ class MangankiWindow(QMainWindow):
         self._layout.addLayout(hbox_layout)
         self._list_box_label = QLabel("Found entries:")
         self._layout.addWidget(self._list_box_label)
-        self._list_box = QListWidget()
+        self._translations_listbox = QListWidget()
         self.update_listbox()
-        self._layout.addWidget(self._list_box)
+        self._layout.addWidget(self._translations_listbox)
         hbox_layout = QHBoxLayout()
         self._tag_label = QLabel("Tag (optional): ")
         hbox_layout.addWidget(self._tag_label)
@@ -119,7 +142,7 @@ class MangankiWindow(QMainWindow):
         hbox_layout.addWidget(self._tag_edit)
         self._tag_edit.textEdited.connect(self.on_tag_edit_changed)
         self._layout.addLayout(hbox_layout)
-        self._list_box.itemSelectionChanged.connect(self.on_selection_changed)
+        self._translations_listbox.itemSelectionChanged.connect(self.on_selection_changed)
         hbox_layout = QHBoxLayout()
         self._transfer_button = QPushButton("Transfer")
         self._transfer_button.clicked.connect(self.on_transfer_click)
@@ -158,42 +181,60 @@ class MangankiWindow(QMainWindow):
             QTimer.singleShot(200, self.blinking_on_canvas)
 
     def on_close(self, event):
-        self._appstate.store_program_state()
+        self._app_logic.store_program_state()
 
     def update_listbox(self):
         entries = self._r["PossibleEntries"]
-        self._list_box.clear()
+        self._translations_listbox.clear()
         if entries:
             for entry in entries:
                 assert isinstance(entry, DictionaryEntry)
-                self._list_box.addItem(
+                self._translations_listbox.addItem(
                     entry.stringify(self._r["PreferredTranslationLanguage"])
                 )
-        self._list_box.clearSelection()
-        self._list_box.setSizePolicy(
+        self._translations_listbox.clearSelection()
+        self._translations_listbox.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
         )
 
-    def preferred_language_changed(self):
-        self._r["PreferredTranslationLanguage"] = self._language_combo_box.currentText()
-
-    def update_language_combo_box(self):
+    def update_language_combobox(self):
+        if self._r["AppState"] == AppState.LOADING_AND_PREPARING:
+            return
         self._language_combo_box.setCurrentText(self._r["PreferredTranslationLanguage"])
 
     def update_status_for_gui_controls(self):
+        if self._r["AppState"] == AppState.LOADING_AND_PREPARING:
+            return
         self._in_process_of_state_updating = True
-        self.update_language_combo_box()
+        self._language_combo_box.clear()
+        for language in sorted(self._r["TranslationLanguages"]):
+            self._language_combo_box.addItem(language)
+        self.update_language_combobox()
+
         current_state = self._r["AppState"]
-        if current_state == AppState.INITIAL:
+        if current_state == AppState.LOADING_AND_PREPARING:
+            self._canvas.setDisabled(True)
             self._entry_edit.setEnabled(False)
             self._transfer_button.setEnabled(False)
             self._web_lookup_button.setEnabled(False)
             self._entry_edit.setText("")
             self.update_listbox()
             self.set_status_message(
+                "Welcome! Please wait until the dictionary is loaded..."
+            )
+        elif current_state == AppState.INITIAL:
+            self._canvas.setDisabled(False)
+            self._entry_edit.setEnabled(False)
+            self._transfer_button.setEnabled(False)
+            self._web_lookup_button.setEnabled(False)
+            self._entry_edit.setText("")
+            self.update_listbox()
+            self.update_language_combobox()
+            self.set_status_message(
                 'Copy a picture to the clipboard, e.g using "Snipping" tool.'
             )
         elif current_state == AppState.IMAGE_COPIED_NO_MARKING:
+            self._canvas.setDisabled(False)
             self._transfer_button.setEnabled(False)
             self._web_lookup_button.setEnabled(False)
             self._entry_edit.setText("")
@@ -204,6 +245,7 @@ class MangankiWindow(QMainWindow):
             )
             self.stress_on_canvas()
         elif current_state == AppState.MARKING_GIVEN_NO_EXPR:
+            self._canvas.setDisabled(False)
             self._entry_edit.setEnabled(True)
             self._transfer_button.setEnabled(False)
             self._web_lookup_button.setEnabled(False)
@@ -211,13 +253,14 @@ class MangankiWindow(QMainWindow):
                 "Enter the desired expression (hiragana/kanji) for the card."
             )
         elif current_state == AppState.EXPR_GIVEN_NO_ENTRY_SELECTED:
+            self._canvas.setDisabled(False)
             self._entry_edit.setEnabled(True)
             self._transfer_button.setEnabled(False)
             self._web_lookup_button.setEnabled(False)
             self.update_listbox()
             self.set_status_message("Please choose the desired translation entry.")
         elif current_state == AppState.ENTRY_SELECTED_READY_TO_TRANSFER:
-            self._entry_edit.setEnabled(True)
+            self._canvas.setDisabled(False)
             self._transfer_button.setEnabled(True)
             self._web_lookup_button.setEnabled(True)
             self.set_status_message(
@@ -230,6 +273,11 @@ class MangankiWindow(QMainWindow):
     def set_status_message(self, message):
         self._status_label.setText(message)
 
+    def on_preferred_language_changed(self):
+        if self._in_process_of_state_updating:
+            return
+        self._r["PreferredTranslationLanguage"] = self._language_combo_box.currentText()
+
     def on_entry_changed(self):
         if self._in_process_of_state_updating:
             return
@@ -238,7 +286,7 @@ class MangankiWindow(QMainWindow):
     def on_selection_changed(self):
         if self._in_process_of_state_updating:
             return
-        current_index = self._list_box.currentRow()
+        current_index = self._translations_listbox.currentRow()
         if current_index != -1:
             self._r["SelectedTranslationIndex"] = current_index
 

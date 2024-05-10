@@ -1,5 +1,5 @@
 ######################################################################
-# Manganki
+# MangAnki
 # Anki plugin to help with vocab mining of online mangas
 # Copyright 2024, Andreas Gaiser
 ######################################################################
@@ -84,6 +84,7 @@ class DictionaryLookup:
         except OSError:
             print("Could not open Dictionary file %s." % file_path)
             self._data = {}
+        print("???")
         self.create_entries()
 
     def get_languages(self):

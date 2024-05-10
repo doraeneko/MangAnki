@@ -1,5 +1,5 @@
 ######################################################################
-# Manganki
+# MangAnki
 # Anki plugin to help with vocab mining of online mangas
 # Copyright 2024, Andreas Gaiser
 ######################################################################
@@ -36,10 +36,10 @@ class Resource:
 
     def set_value(self, new_value):
         if new_value != self._value:
-            print(
-                "Set value of %s to %s, old value: %s."
-                % (self._name, new_value, self._value)
-            )
+            #print(
+            #    "Set value of %s to %s, old value: %s."
+            #    % (self._name, new_value, self._value)
+            #)
             self._value = new_value
             for listener in self._listeners:
                 listener()

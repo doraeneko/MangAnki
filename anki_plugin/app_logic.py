@@ -1,5 +1,5 @@
 ######################################################################
-# Manganki
+# MangAnki
 # Anki plugin to help with vocab mining of online mangas
 # Copyright 2024, Andreas Gaiser
 ######################################################################
@@ -8,7 +8,10 @@
 # application is stored in resource AppState.
 ######################################################################
 
-import enum, os, pickle
+import enum
+import os
+import pickle
+import asyncio
 
 try:
     from .resources import Resource, Resources
@@ -21,11 +24,12 @@ except:
 
 
 class AppState(enum.Enum):
-    INITIAL = 0
-    IMAGE_COPIED_NO_MARKING = 1
-    MARKING_GIVEN_NO_EXPR = 2
-    EXPR_GIVEN_NO_ENTRY_SELECTED = 3
-    ENTRY_SELECTED_READY_TO_TRANSFER = 4
+    LOADING_AND_PREPARING = 0
+    INITIAL = 1
+    IMAGE_COPIED_NO_MARKING = 2
+    MARKING_GIVEN_NO_EXPR = 3
+    EXPR_GIVEN_NO_ENTRY_SELECTED = 4
+    ENTRY_SELECTED_READY_TO_TRANSFER = 5
 
 
 APP_STATE_STORE_FILE = "app.pickle"
@@ -34,7 +38,7 @@ APP_STATE_STORE_FILE = "app.pickle"
 class AppLogic:
     def __init__(self):
         resources_dict = {
-            "AppState": AppState.INITIAL,
+            "AppState": AppState.LOADING_AND_PREPARING,
             "Image": None,
             "OriginalClipboardImage": None,
             "Marking": None,
@@ -61,15 +65,19 @@ class AppLogic:
             "PreferredTranslationLanguage",
             self.on_change_preferred_translation_language,
         )
+
+    def do_initial_loading_tasks(self):
         self._r.Dictionary = dict_lookup.DictionaryLookup.de_pickle(
             dict_lookup.PICKLE_FILE_NAME
         )
         if self._r.Dictionary is None:
+            print("X")
             self._r.Dictionary = DictionaryLookup()
             self._r.Dictionary.parse_file(
                 "%s/%s"
                 % (os.path.dirname(dict_lookup.__file__), "jmdict-all-3.5.0.json")
             )
+            print("Y")
             self._r.Dictionary.pickle(dict_lookup.PICKLE_FILE_NAME)  # for next time
         self._r.TranslationLanguages = self._r.Dictionary.get_languages()
 
@@ -88,6 +96,8 @@ class AppLogic:
 
     def on_change_original_clipboard_image(self):
         self._reset_entry_resources()
+        if self._r.AppState == AppState.LOADING_AND_PREPARING:
+            return
         self._r.AppState = AppState.INITIAL
         if self._r.OriginalClipboardImage:
             self._r.AppState = AppState.IMAGE_COPIED_NO_MARKING
@@ -100,6 +110,8 @@ class AppLogic:
             self._r.AppState = AppState.MARKING_GIVEN_NO_EXPR
 
     def on_change_current_entry(self):
+        if self._r.AppState == AppState.LOADING_AND_PREPARING:
+            return
         self._r.CurrentTakobotoLink = None
         self._r.PossibleEntries = self._r.Dictionary.look_up(self._r.CurrentEntry)
         self._r.SelectedTranslationIndex = None

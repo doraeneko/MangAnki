@@ -11,13 +11,16 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, Q
 
 JMDICT_ACKNOWLEDGMENTS = """
 <h2>Acknowledgments</h2>
-<p>This plugin uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic
+<p>MangAnki uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic
  Dictionary Research and Development Group, and are used in conformance with the Group's licence. 
  See also <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project">this site</a>.
 </p>
 <p>
-This plugin uses the handy JSON export files from <a href=https://github.com/scriptin/jmdict-simplified>jmdict-simplified</a>.
+MangAnki uses the handy JSON export files from <a href=https://github.com/scriptin/jmdict-simplified>jmdict-simplified</a>.
 </p>
+<p>
+MangAnki uses the wonderful Takoboto dictionary, by providing weblinks to Takoboto entries on the cards and within the plugin itself.
+<p>
 """
 LICENSE_NOTE = """
 <h2>License</h2>

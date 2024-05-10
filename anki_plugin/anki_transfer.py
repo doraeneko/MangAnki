@@ -1,5 +1,5 @@
 ######################################################################
-# Manganki
+# MangAnki
 # Anki plugin to help with vocab mining of online mangas
 # Copyright 2024, Andreas Gaiser
 ######################################################################
@@ -39,7 +39,7 @@ BACK_TEMPLATE = """
 <H3><a href={{Takoboto Link}}>{{Expression}}</a></H3>
 """
 
-MODEL_NAME = "MangankiV1"
+MODEL_NAME = "MangAnkiV1"
 
 
 def get_model():
@@ -136,7 +136,6 @@ def add_reviewer_card(
         mw.onAddCard()
         note = notes.Note(model=get_model(), col=mw.col)
         if note:
-            # new_expression = self.expression_edit.text()
             note["Expression"] = dict_entry.get_expression()
             note["Translation"] = dict_entry.get_translation(preferred_language)
             note["Reading"] = dict_entry.get_reading()
