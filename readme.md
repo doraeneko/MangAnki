@@ -10,8 +10,8 @@ a popular Japanese dictionary, providing more information and phrases.
 <img src="images/screenshot_main.png" width="50%" />
 
 
-The generated cards have an image containing a japanese sentence on the front page,
-and the meaning of one of the words in the sentence as back side of the card. 
+The generated cards have an image containing a Japanese sentence on the front page,
+and the meaning of one of the words in the sentence on the back side.
 Images copied into the system clipboard (e.g. using the Windows Snipping tool) are automatically
 imported into the tool, an unknown word in the image can be marked, and a dictionary 
 lookup can be performed to obtain meaning and writing, and also a link to the popular 
