@@ -32,7 +32,7 @@ class AppState(enum.Enum):
     ENTRY_SELECTED_READY_TO_TRANSFER = 5
 
 
-APP_STATE_STORE_FILE = "app.pickle"
+APP_STATE_STORE_FILE = "%s/%s" % (os.path.dirname(__file__), "app.pickle")
 
 
 class AppLogic:
@@ -67,18 +67,11 @@ class AppLogic:
         )
 
     def do_initial_loading_tasks(self):
-        self._r.Dictionary = dict_lookup.DictionaryLookup.de_pickle(
-            dict_lookup.PICKLE_FILE_NAME
-        )
+        self._r.Dictionary = dict_lookup.DictionaryLookup.de_pickle()
         if self._r.Dictionary is None:
-            print("X")
             self._r.Dictionary = DictionaryLookup()
-            self._r.Dictionary.parse_file(
-                "%s/%s"
-                % (os.path.dirname(dict_lookup.__file__), "jmdict-all-3.5.0.json")
-            )
-            print("Y")
-            self._r.Dictionary.pickle(dict_lookup.PICKLE_FILE_NAME)  # for next time
+            self._r.Dictionary.parse_file()
+            self._r.Dictionary.pickle()  # for next time
         self._r.TranslationLanguages = self._r.Dictionary.get_languages()
 
     def get_resources(self):

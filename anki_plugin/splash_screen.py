@@ -6,14 +6,17 @@
 # Splash screen for entertain during loading time.
 ######################################################################
 
+import os
 from aqt.qt import *
 from PyQt6.QtCore import Qt
+
+SPLASH_SCREEN_IMAGE = "%s/%s" % (os.path.dirname(__file__), "splashscreen.jpeg")
 
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
         super().__init__(
-            QPixmap("splashscreen.jpeg").scaled(
+            QPixmap(SPLASH_SCREEN_IMAGE).scaled(
                 400,
                 400,
                 aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,

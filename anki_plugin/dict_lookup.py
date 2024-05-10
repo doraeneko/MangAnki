@@ -9,7 +9,11 @@
 import dataclasses
 import typing
 import json
+import os
 import pickle
+
+DICT_FILE_NAME = "%s/%s" % (os.path.dirname(__file__), "jmdict-all-3.5.0.json")
+PICKLE_FILE_NAME = "%s/%s" % (os.path.dirname(__file__), "jmdict-all-3.5.0.json.pickle")
 
 
 @dataclasses.dataclass
@@ -63,9 +67,6 @@ class DictionaryEntry:
         return "https://takoboto.jp/?w=%s" % self.unique_id
 
 
-PICKLE_FILE_NAME = "jmdict-all-3.5.0.json.pickle"
-
-
 class DictionaryLookup:
     """Parses JSON file containing dictionary items, and provides a method look_up(text)
     for getting matching DictionaryEntry's for text. Can also be serialized via pickle
@@ -77,14 +78,13 @@ class DictionaryLookup:
         self._kana_to_entry = {}
         self._language_abbreviations = set()
 
-    def parse_file(self, file_path):
+    def parse_file(self):
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with open(DICT_FILE_NAME, encoding="utf-8") as f:
                 self._data = json.load(f)
         except OSError:
-            print("Could not open Dictionary file %s." % file_path)
+            print("Could not open Dictionary file %s." % DICT_FILE_NAME)
             self._data = {}
-        print("???")
         self.create_entries()
 
     def get_languages(self):
@@ -132,16 +132,16 @@ class DictionaryLookup:
             result.extend(self._kana_to_entry[text])
         return result
 
-    def pickle(self, pickle_filename):
-        with open(pickle_filename, "wb") as pickle_file:
+    def pickle(self):
+        with open(PICKLE_FILE_NAME, "wb") as pickle_file:
             pickle.dump(self, pickle_file)
 
     @staticmethod
-    def de_pickle(pickle_filename):
+    def de_pickle():
         """Returns the de-pickled dictionary structure stored in pickle_filename. If
         loading failed, None is returned."""
         try:
-            with open(pickle_filename, "rb") as pickle_file:
+            with open(PICKLE_FILE_NAME, "rb") as pickle_file:
                 return pickle.load(pickle_file)
         except Exception as e:
             return None

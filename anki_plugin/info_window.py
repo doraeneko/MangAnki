@@ -9,6 +9,11 @@
 from aqt.qt import *
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget
 
+MANGANKI_PROLOG = """
+<h2>MangAnki</h2>
+Find some documentation at <a href="https://github.com/doraeneko/MangAnki">github</a>.
+"""
+
 JMDICT_ACKNOWLEDGMENTS = """
 <h2>Acknowledgments</h2>
 <p>MangAnki uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic
@@ -49,6 +54,23 @@ SOFTWARE.
 """
 
 
+class ClickableTextEdit(QTextEdit):
+    def __init__(self):
+        super().__init__()
+        self.setReadOnly(True)
+
+    def mousePressEvent(self, e):
+        self.anchor = self.anchorAt(e.pos())
+        if self.anchor:
+            QApplication.setOverrideCursor(Qt.CursorShape.PointingHandCursor)
+
+    def mouseReleaseEvent(self, e):
+        if self.anchor:
+            QDesktopServices.openUrl(QUrl(self.anchor))
+            QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
+            self.anchor = None
+
+
 class InfoWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -58,9 +80,10 @@ class InfoWindow(QWidget):
         self.setWindowTitle("Info")
         self.setGeometry(100, 100, 300, 500)
         layout = QVBoxLayout()
-        info_text = QTextEdit()
+        info_text = ClickableTextEdit()
         info_text.setReadOnly(True)
-        text = JMDICT_ACKNOWLEDGMENTS + LICENSE_NOTE
+        text = MANGANKI_PROLOG + JMDICT_ACKNOWLEDGMENTS + LICENSE_NOTE
         info_text.setHtml(text)
+
         layout.addWidget(info_text)
         self.setLayout(layout)
