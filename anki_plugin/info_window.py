@@ -27,7 +27,7 @@ MangAnki uses the handy JSON export files from <a href=https://github.com/script
 MangAnki uses the wonderful Takoboto dictionary, by providing weblinks to Takoboto entries on the cards and within the plugin itself.
 <p>
 <p>
-MangAnki uses TaylorSMarks <a href="https://github.com/TaylorSMarks/playsound/blob/master/playsound.py">playound</a> module
+MangAnki uses TaylorSMarks <a href="https://github.com/TaylorSMarks/playsound/blob/master/playsound.py">playsound</a> module
 for playing audio.
 <p>
 """
