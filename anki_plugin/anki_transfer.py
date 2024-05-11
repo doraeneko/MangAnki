@@ -6,11 +6,10 @@
 # Interface to Anki GUI
 ######################################################################
 
-
+import os
 from aqt import mw, dialogs
 from aqt.qt import *
 from anki import notes
-from anki.hooks import addHook
 from PyQt6.QtGui import QImage
 
 try:
@@ -27,6 +26,8 @@ def show_error_dialog(message):
     error_box.setWindowTitle("Error")
     error_box.exec()
 
+
+TEMP_IMAGE_NAME = "%s/%s" % (os.path.dirname(__file__), "temp.png")
 
 FRONT_TEMPLATE = """
 <H2>{{Sentence}}</H2>
@@ -130,7 +131,7 @@ def add_reviewer_card(
     tag: str = "",
     audio_path: str = "",
 ):
-    image.save("temp.png")
+    image.save(TEMP_IMAGE_NAME)
     status = ""
     try:
         add_dialogue = dialogs.open("AddCards", mw)
@@ -141,11 +142,11 @@ def add_reviewer_card(
             note["Translation"] = dict_entry.get_translation(preferred_language)
             note["Reading"] = dict_entry.get_reading()
             note["Takoboto Link"] = dict_entry.get_takoboto_link_for_card()
-            new_file = mw.col.media.add_file("temp.png")
+            new_file = mw.col.media.add_file(TEMP_IMAGE_NAME)
             note["Sentence"] = '<img src="%s"/>' % new_file
             if audio_path:
                 audio_file = mw.col.media.add_file(audio_path)
-                note["Audio"] = '[sound:%s]' % audio_file
+                note["Audio"] = "[sound:%s]" % audio_file
             if tag:
                 note.add_tag(tag)
             add_dialogue.set_note(note)
