@@ -34,15 +34,10 @@ def main():
 
 def start_plugin():
     if not hasattr(mw, "manganki_window"):
-        app_state = AppLogic()
         mw.manganki_window = MangAnkiWindow()
     else:
         mw.manganki_window.show()
     dialogs.open("AddCards", mw)
-
-    # app = QApplication(sys.argv)
-    # window = MangankiWindow(models.Model())
-    # window.show()
 
 
 if __name__ == "__main__":

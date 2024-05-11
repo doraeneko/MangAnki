@@ -5,11 +5,12 @@
 ######################################################################
 # Widget for displaying clipboard images and setting a marking.
 ######################################################################
+import os
 
 from aqt.qt import *
 from PyQt6.QtWidgets import QApplication, QWidget, QSizePolicy
 from PyQt6.QtGui import QPainter, QPen, QImage
-from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtCore import Qt, QPoint, QUrl
 
 try:
     from .resources import Resources
@@ -64,7 +65,8 @@ class ClipboardImageWidget(QWidget):
                 self._r["OriginalClipboardImage"] = QPixmap.fromImage(image)
             self._r["Marking"] = None
             self.update_image()
-
+        elif mime_data.hasUrls() and len(mime_data.urls()) == 1:
+            self._r["AudioPathUrl"] = mime_data.urls()[0]
         # Clear canvas if clipboard does not contain an image
         self.update()
 

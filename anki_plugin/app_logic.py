@@ -50,6 +50,8 @@ class AppLogic:
             "CurrentTakobotoLink": None,
             "TranslationLanguages": None,
             "PreferredTranslationLanguage": "eng",
+            "AudioPath": "",
+            "AudioPathUrl": None,
             "Tag": "",
         }
         self._r = Resources(resources_dict)
@@ -65,6 +67,17 @@ class AppLogic:
             "PreferredTranslationLanguage",
             self.on_change_preferred_translation_language,
         )
+        self._r.add_listener("AudioPathUrl", self.process_potential_audio_url)
+
+    def process_potential_audio_url(self):
+        url = self._r["AudioPathUrl"]
+        if not url:
+            self._r.AudioPath = None
+        if url.isLocalFile():
+            path = url.toLocalFile()
+            _, ext = os.path.splitext(path)
+            if ext in [".mp3", ".wav"]:
+                self._r["AudioPath"] = path
 
     def do_initial_loading_tasks(self):
         self._r.Dictionary = dict_lookup.DictionaryLookup.de_pickle()

@@ -19,6 +19,8 @@ try:
     from .app_logic import AppState, AppLogic
     from .info_window import InfoWindow
     from .splash_screen import SplashScreen
+    from .playsound import playsound
+    from .settings_window import SettingsWindow
 except:
     from clipboard_image_widget import ClipboardImageWidget
     from app_logic import AppState, AppLogic
@@ -27,6 +29,8 @@ except:
     from app_logic import AppState, AppLogic
     from info_window import InfoWindow
     from splash_screen import SplashScreen
+    from playsound import playsound
+    from settings_window import SettingsWindow
 
 
 class PreparationWorker(QThread):
@@ -45,7 +49,7 @@ class PreparationWorker(QThread):
 
 
 class MangAnkiWindow(QMainWindow):
-    """Main window of the plugin."""
+    """Main window of the add-on."""
 
     def __init__(self):
         super().__init__()
@@ -63,14 +67,17 @@ class MangAnkiWindow(QMainWindow):
         self._default_font = None
         self._layout = None
         self._central_widget = None
-        self._in_process_of_state_updating = False
+        self._settings_menu = None
         self._info_window = InfoWindow()
+        self._settings_window = SettingsWindow(self._app_logic)
         self._info_menu = None
         self._canvas_box = None
         self._focus_counter = None
-        self._language_combo_box = None
-        self._tag_label = None
-        self._tag_edit = None
+        self._audio_label = None
+        self._audio_edit = None
+        self._audio_button = None
+        self._audio_clear_button = None
+        self._in_process_of_state_updating = False
         self.build_gui()
         self.add_listeners()
         self._splash_screen = SplashScreen()
@@ -82,15 +89,18 @@ class MangAnkiWindow(QMainWindow):
 
     def on_preparation_done(self):
         self._splash_screen.close()
-        self._language_combo_box.clear()
         self.show()
+        self._settings_window.on_preparation_done()
         self._r["AppState"] = AppState.INITIAL
+        self._r["AudioPath"] = ""
 
     def build_gui(self):
         self.setWindowTitle("MangAnki")
         menubar = self.menuBar()
         self._info_menu = menubar.addMenu("Info")
         self._info_menu.aboutToShow.connect(self.open_info_window)
+        self._settings_menu = menubar.addMenu("Settings")
+        self._settings_menu.aboutToShow.connect(self.open_settings_window)
         self._central_widget = QWidget()
         self._default_font = QFont()
         self._default_font.setPointSize(14)
@@ -98,17 +108,9 @@ class MangAnkiWindow(QMainWindow):
         self.setCentralWidget(self._central_widget)
         self._layout = QVBoxLayout()
         self._central_widget.setLayout(self._layout)
-        preferred_language_label = QLabel("Preferred Translation Language:")
-        self._layout.addWidget(preferred_language_label)
-        self._language_combo_box = QComboBox()
-        self._language_combo_box.clear()
-        self._language_combo_box.currentIndexChanged.connect(
-            self.on_preferred_language_changed
-        )
-        self._layout.addWidget(self._language_combo_box)
         canvas_layout = QGridLayout()
         canvas_box = QGroupBox("Screenshot and marking:")
-        canvas_size = 300
+        canvas_size = 350
         canvas_box_size = canvas_size + 50
         canvas_box.setFixedSize(canvas_box_size, canvas_box_size)
         canvas_box.setMaximumHeight(canvas_box_size)
@@ -135,14 +137,23 @@ class MangAnkiWindow(QMainWindow):
         self._translations_listbox = QListWidget()
         self.update_listbox()
         self._layout.addWidget(self._translations_listbox)
+        self._translations_listbox.itemSelectionChanged.connect(
+            self.on_selection_changed
+        )
         hbox_layout = QHBoxLayout()
-        self._tag_label = QLabel("Tag (optional): ")
-        hbox_layout.addWidget(self._tag_label)
-        self._tag_edit = QLineEdit()
-        hbox_layout.addWidget(self._tag_edit)
-        self._tag_edit.textEdited.connect(self.on_tag_edit_changed)
+        self._audio_label = QLabel("Audio (opt.): ")
+        self._layout.addWidget(self._audio_label)
+        self._audio_edit = QLineEdit()
+        hbox_layout.addWidget(self._audio_edit)
+        self._audio_edit.textEdited.connect(self.on_audio_edit_changed)
+        self._audio_button = QPushButton("𝄞")
+        self._audio_button.clicked.connect(self.on_play_click)
+        hbox_layout.addWidget(self._audio_button)
+        self._audio_clear_button = QPushButton("X")
+        self._audio_clear_button.clicked.connect(self.on_audio_clear)
+        hbox_layout.addWidget(self._audio_clear_button)
         self._layout.addLayout(hbox_layout)
-        self._translations_listbox.itemSelectionChanged.connect(self.on_selection_changed)
+
         hbox_layout = QHBoxLayout()
         self._transfer_button = QPushButton("Transfer")
         self._transfer_button.clicked.connect(self.on_transfer_click)
@@ -157,13 +168,23 @@ class MangAnkiWindow(QMainWindow):
         self.setFixedSize(self.minimumSizeHint())
         self.update_status_for_gui_controls()
 
+    def show_error_message(self, message):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Icon.Critical)
+        msg_box.setWindowTitle("Error")
+        msg_box.setText(message)
+        msg_box.exec()
+
     def open_info_window(self):
         self._info_window.show()
+
+    def open_settings_window(self):
+        self._settings_window.exec()
 
     def add_listeners(self):
         self._r.add_listener("AppState", self.update_status_for_gui_controls)
         self._r.add_listener("PossibleEntries", self.update_listbox)
-        self._r.add_listener("Tag", self.update_tag_edit_content)
+        self._r.add_listener("AudioPath", self.update_audio_edit_content)
 
     def stress_on_canvas(self):
         self._focus_counter = 5
@@ -197,39 +218,19 @@ class MangAnkiWindow(QMainWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
         )
 
-    def update_language_combobox(self):
-        if self._r["AppState"] == AppState.LOADING_AND_PREPARING:
-            return
-        self._language_combo_box.setCurrentText(self._r["PreferredTranslationLanguage"])
-
     def update_status_for_gui_controls(self):
         if self._r["AppState"] == AppState.LOADING_AND_PREPARING:
             return
         self._in_process_of_state_updating = True
-        self._language_combo_box.clear()
-        for language in sorted(self._r["TranslationLanguages"]):
-            self._language_combo_box.addItem(language)
-        self.update_language_combobox()
-
+        self._settings_window.update_status_for_gui_controls()
         current_state = self._r["AppState"]
-        if current_state == AppState.LOADING_AND_PREPARING:
-            self._canvas.setDisabled(True)
-            self._entry_edit.setEnabled(False)
-            self._transfer_button.setEnabled(False)
-            self._web_lookup_button.setEnabled(False)
-            self._entry_edit.setText("")
-            self.update_listbox()
-            self.set_status_message(
-                "Welcome! Please wait until the dictionary is loaded..."
-            )
-        elif current_state == AppState.INITIAL:
+        if current_state == AppState.INITIAL:
             self._canvas.setDisabled(False)
             self._entry_edit.setEnabled(False)
             self._transfer_button.setEnabled(False)
             self._web_lookup_button.setEnabled(False)
             self._entry_edit.setText("")
             self.update_listbox()
-            self.update_language_combobox()
             self.set_status_message(
                 'Copy a picture to the clipboard, e.g using "Snipping" tool.'
             )
@@ -273,11 +274,6 @@ class MangAnkiWindow(QMainWindow):
     def set_status_message(self, message):
         self._status_label.setText(message)
 
-    def on_preferred_language_changed(self):
-        if self._in_process_of_state_updating:
-            return
-        self._r["PreferredTranslationLanguage"] = self._language_combo_box.currentText()
-
     def on_entry_changed(self):
         if self._in_process_of_state_updating:
             return
@@ -295,13 +291,26 @@ class MangAnkiWindow(QMainWindow):
         if link:
             webbrowser.open(link)
 
-    def on_tag_edit_changed(self):
-        if self._tag_edit.text() != self._r["Tag"]:
-            self._r["Tag"] = self._tag_edit.text()
+    def on_audio_edit_changed(self):
+        if self._audio_edit.text() != self._r["AudioPath"]:
+            self._r["AudioPath"] = self._audio_edit.text()
+        self._audio_button.setDisabled(not self._r["AudioPath"])
 
-    def update_tag_edit_content(self):
-        if self._tag_edit.text() != self._r["Tag"]:
-            self._tag_edit.setText(self._r["Tag"])
+    def update_audio_edit_content(self):
+        if self._audio_edit.text() != self._r["AudioPath"]:
+            self._audio_edit.setText(self._r["AudioPath"])
+        self._audio_button.setDisabled(not self._r["AudioPath"])
+
+    def on_play_click(self):
+        try:
+            playsound(self._r["AudioPath"])
+        except:
+            self.show_error_message(
+                "Could not play audio file: %s" % str(self._r["AudioPath"])
+            )
+
+    def on_audio_clear(self):
+        self._r["AudioPath"] = ""
 
     def on_transfer_click(self):
         add_reviewer_card(
@@ -309,4 +318,5 @@ class MangAnkiWindow(QMainWindow):
             self._r["Image"],
             self._r["PreferredTranslationLanguage"],
             self._r["Tag"],
+            self._r["AudioPath"],
         )

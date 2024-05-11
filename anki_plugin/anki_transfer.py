@@ -128,6 +128,7 @@ def add_reviewer_card(
     image: QImage,
     preferred_language: str = "eng",
     tag: str = "",
+    audio_path: str = "",
 ):
     image.save("temp.png")
     status = ""
@@ -142,6 +143,9 @@ def add_reviewer_card(
             note["Takoboto Link"] = dict_entry.get_takoboto_link_for_card()
             new_file = mw.col.media.add_file("temp.png")
             note["Sentence"] = '<img src="%s"/>' % new_file
+            if audio_path:
+                audio_file = mw.col.media.add_file(audio_path)
+                note["Audio"] = '[sound:%s]' % audio_file
             if tag:
                 note.add_tag(tag)
             add_dialogue.set_note(note)

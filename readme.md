@@ -20,6 +20,8 @@ lookup can be performed to obtain meaning and writing.
 - MangAnki uses the JMdict/EDICT and KANJIDIC dictionary files. These files are the property of the Electronic Dictionary Research and Development Group, and are used in conformance with the Group's licence. See also [JMDICT](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project )
 - MangAnki uses the handy JSON export files from <a href=https://github.com/scriptin/jmdict-simplified>jmdict-simplified</a>.
 - MangAnki uses the wonderful <a href="https://takoboto.jp/">Takoboto</a> dictionary, by providing weblinks to Takoboto entries on the cards and within the plugin itself.
+- MangAnki uses TaylorSMarks <a href="https://github.com/TaylorSMarks/playsound/blob/master/playsound.py">playound</a> module
+for playing audio.
 # Beware
 This program modifies your Anki data. No responsibility is given for potential damages and problems due to software bugs etc. See also license.
 
@@ -55,11 +57,9 @@ The picture should appear in MangAnki. Now mark the word you are interested in *
 
 ### Enter the unknown word
 Now enter the word you are looking for into the "Expression" field. Please use either purely Kana writing or correct Kanji writing. 
-Future versions will also consider e.g. different verb forms, or try to extract the word automatically via OCR.
+Future versions will also consider e.g. different verb forms, and try to extract the word automatically via OCR techniques.
 If the dictionary knows the word, one or more entries appear in the box under "Found entries". You can change the preferred language of the dictionary
 using the combo box on top of MangAnki,
-
-![alt text](images/screenshot_expression.png)
 
 ### Choose a translation and transfer
 
@@ -69,10 +69,15 @@ You can also specify a Tag for your Anki deck.
 Then click "Transfer". If not yet open, the "Add" dialogue of Anki should open and the infos of the card should be displayed. You can edit 
 the entry (e.g. remove unwanted readings / meanings) and then add the new card to your deck (make sure that it is added to the correct deck!
 
-<img src="images/screenshot_main.png" width="50%" />
+### Optional: Add audio
+You can also use an recording tool to add audio files, e.g. <a href="https://getsharex.com/">ShareX</a>. If you record an audio snippet
+using ShareX (mp3 or wav format), the audio file is copied to the clipboard, this is detected by Manganki and the audio file is automatically added as entry
+(under "Audio (opt.)"). You can replace or remove the audio by pressing the "X"-button, and play it using the "𝄞"-button.
+
+<img src="images/screenshot_main.png" width="75%" />
+
 
 ## TODOS:
-- Dictionary loading at the beginning is slow - maybe use an SQLite database
-- Support of sound files e.g. for Anime mining
+- Dictionary loading at the beginning is slow - maybe use an SQLite database for that in future versions
 - OCR for words
 - Possibly tighter integration into Anki (originally, it was planned as a standalone tool)
