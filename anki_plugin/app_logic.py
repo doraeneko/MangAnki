@@ -122,10 +122,10 @@ class AppLogic:
         self._r.PossibleEntries = self._r.Dictionary.look_up(self._r.CurrentEntry)
         self._r.SelectedTranslationIndex = None
         self._r.SelectedTranslation = None
-        if (
-            self._r.PossibleEntries
-            and self._r.AppState == AppState.MARKING_GIVEN_NO_EXPR
-        ):
+        if self._r.PossibleEntries and self._r.AppState in [
+            AppState.MARKING_GIVEN_NO_EXPR,
+            AppState.EXPR_GIVEN_NO_ENTRY_SELECTED,
+        ]:
             self._r.AppState = AppState.EXPR_GIVEN_NO_ENTRY_SELECTED
         elif self._r.AppState != AppState.INITIAL:
             self._r.AppState = AppState.MARKING_GIVEN_NO_EXPR

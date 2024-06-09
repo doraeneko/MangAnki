@@ -7,6 +7,8 @@
 ######################################################################
 
 import os
+import typing
+
 from aqt import mw, dialogs
 from aqt.qt import *
 from anki import notes
@@ -39,8 +41,19 @@ BACK_TEMPLATE = """
 <H2>{{Translation}}</H2>
 <H3><a href={{Takoboto Link}}>{{Expression}}</a></H3>
 """
+FRONT_TEMPLATE_REVERSE = """
+<H2>{{Translation}}</H2>
+"""
+BACK_TEMPLATE_REVERSE = """
+<H1>{{Expression}}</H1>
+<H1>{{Reading}}</H1>
+<H2>{{Translation}}</H2>
+<H3><a href={{Takoboto Link}}>{{Expression}}</a></H3>
+<H2>{{Sentence}}</H2>
+<H2>{{Audio}}</H2>
+"""
 
-MODEL_NAME = "MangAnkiV1"
+MODEL_NAME = "MangAnkiV2"
 
 
 def get_model():
@@ -115,7 +128,12 @@ def get_model():
             },
         ]
         model["tmpls"] = [
-            {"name": "MangAnki", "qfmt": FRONT_TEMPLATE, "afmt": BACK_TEMPLATE}
+            {"name": "MangAnki", "qfmt": FRONT_TEMPLATE, "afmt": BACK_TEMPLATE},
+            {
+                "name": "MangAnkiReversed",
+                "qfmt": FRONT_TEMPLATE_REVERSE,
+                "afmt": BACK_TEMPLATE_REVERSE,
+            },
         ]
         model["sticky"] = []
         mw.col.models.add(model)
@@ -124,26 +142,30 @@ def get_model():
     return model
 
 
-def add_reviewer_card(
-    dict_entry: DictionaryEntry,
-    image: QImage,
+def transfer_given_infos(
+    expr: str,
+    dict_entry: typing.Optional[DictionaryEntry],
+    image: typing.Optional[QImage],
     preferred_language: str = "eng",
     tag: str = "",
     audio_path: str = "",
 ):
-    image.save(TEMP_IMAGE_NAME)
     status = ""
     try:
         add_dialogue = dialogs.open("AddCards", mw)
         mw.onAddCard()
         note = notes.Note(model=get_model(), col=mw.col)
         if note:
-            note["Expression"] = dict_entry.get_expression()
-            note["Translation"] = dict_entry.get_translation(preferred_language)
-            note["Reading"] = dict_entry.get_reading()
-            note["Takoboto Link"] = dict_entry.get_takoboto_link_for_card()
-            new_file = mw.col.media.add_file(TEMP_IMAGE_NAME)
-            note["Sentence"] = '<img src="%s"/>' % new_file
+            if expr:
+                note["Expression"] = expr
+            if dict_entry:
+                note["Translation"] = dict_entry.get_translation(preferred_language)
+                note["Reading"] = dict_entry.get_reading()
+                note["Takoboto Link"] = dict_entry.get_takoboto_link_for_card()
+            if image:
+                image.save(TEMP_IMAGE_NAME)
+                new_file = mw.col.media.add_file(TEMP_IMAGE_NAME)
+                note["Sentence"] = '<img src="%s"/>' % new_file
             if audio_path:
                 audio_file = mw.col.media.add_file(audio_path)
                 note["Audio"] = "[sound:%s]" % audio_file

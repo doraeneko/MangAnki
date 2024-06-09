@@ -65,9 +65,10 @@ using the combo box on top of MangAnki,
 
 Select one of the translations. 
 You can get more info about the translation entry by clicking on "Web lookup" (opens a browser window pointing to Takoboto's entry for this word).
-You can also specify a Tag for your Anki deck. 
 Then click "Transfer". If not yet open, the "Add" dialogue of Anki should open and the infos of the card should be displayed. You can edit 
 the entry (e.g. remove unwanted readings / meanings) and then add the new card to your deck (make sure that it is added to the correct deck!
+If you prefer another language than English for the translations, click on "Settings" and choose a preferred translation language. 
+Under "Settings" you can also specify a Tag for your Anki deck. This tag will be added to the created card (and subsequent added cards).
 
 ### Optional: Add audio
 You can also use an recording tool to add audio files, e.g. <a href="https://getsharex.com/">ShareX</a>. If you record an audio snippet
@@ -76,6 +77,9 @@ using ShareX (mp3 or wav format), the audio file is copied to the clipboard, thi
 
 <img src="images/screenshot_main.png" width="75%" />
 
+
+## Settings
+You can specify the preferre
 
 ## TODOS:
 - Dictionary loading at the beginning is slow - maybe use an SQLite database for that in future versions

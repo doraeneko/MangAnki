@@ -15,7 +15,7 @@ try:
     from .clipboard_image_widget import ClipboardImageWidget
     from .app_logic import AppState
     from .dict_lookup import DictionaryEntry
-    from .anki_transfer import add_reviewer_card
+    from .anki_transfer import transfer_given_infos
     from .app_logic import AppState, AppLogic
     from .info_window import InfoWindow
     from .splash_screen import SplashScreen
@@ -25,7 +25,7 @@ except:
     from clipboard_image_widget import ClipboardImageWidget
     from app_logic import AppState, AppLogic
     from dict_lookup import DictionaryEntry
-    from anki_transfer import add_reviewer_card
+    from anki_transfer import transfer_given_infos
     from app_logic import AppState, AppLogic
     from info_window import InfoWindow
     from splash_screen import SplashScreen
@@ -248,7 +248,7 @@ class MangAnkiWindow(QMainWindow):
         elif current_state == AppState.MARKING_GIVEN_NO_EXPR:
             self._canvas.setDisabled(False)
             self._entry_edit.setEnabled(True)
-            self._transfer_button.setEnabled(False)
+            self._transfer_button.setEnabled(True)
             self._web_lookup_button.setEnabled(False)
             self.set_status_message(
                 "Enter the desired expression (hiragana/kanji) for the card."
@@ -256,7 +256,7 @@ class MangAnkiWindow(QMainWindow):
         elif current_state == AppState.EXPR_GIVEN_NO_ENTRY_SELECTED:
             self._canvas.setDisabled(False)
             self._entry_edit.setEnabled(True)
-            self._transfer_button.setEnabled(False)
+            self._transfer_button.setEnabled(True)
             self._web_lookup_button.setEnabled(False)
             self.update_listbox()
             self.set_status_message("Please choose the desired translation entry.")
@@ -313,7 +313,8 @@ class MangAnkiWindow(QMainWindow):
         self._r["AudioPath"] = ""
 
     def on_transfer_click(self):
-        add_reviewer_card(
+        transfer_given_infos(
+            self._r["CurrentEntry"],
             self._r["SelectedTranslation"],
             self._r["Image"],
             self._r["PreferredTranslationLanguage"],
